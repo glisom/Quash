@@ -1,7 +1,7 @@
 # Quash
 EECS 678, Project 1
 
-Run executables without arguments (10)
+1. Run executables without arguments (10)
 2. Run executables with arguments (10)
 3. set for HOME and PATH work properly (5)
 4. exit and quit work properly (5)
