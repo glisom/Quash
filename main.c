@@ -124,8 +124,6 @@ int main(int argc, char **argv, char **envp) {
     trimwhitespace(inputString);
     command = strtok(inputString, " ");
     var1 = strtok(NULL, " ");
-    printf("Command: %s\n", command);
-    printf("First Variable: %s\n", var1);
     shellCommand();
 
   } while (flag);
