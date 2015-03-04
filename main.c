@@ -15,6 +15,9 @@ int flag = 1;
 char inputString[200];
 char *command;
 char *var1;
+static pid_t QuashPid;
+static pid_t QuashPGid;
+static int QuashTerminal;
 
 struct job {
   char *command;
@@ -104,7 +107,16 @@ int main(int argc, char **argv, char **envp) {
   printf("┃████████████████████████████████████████████████████████████████┃\n");
   printf("┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛\n");
 
- 
+  QuashPid = getpid();
+  QuashTerminal = STDIN_FILENO;
+
+  if(isatty(QuashTerminal)) {
+    while (tcgetpgrp(QuashTerminal) != (QuashPGid = getpgrp()))
+                              kill(QuashPid, SIGTTIN);
+  
+  } else {
+      printf("Quash is not in a terminal enviroment.\n Quitting...\n");
+  }
 
   do {
     printf(":$ ");
