@@ -9,19 +9,26 @@
 #include <errno.h>
 #include <sys/mman.h>
 #include <signal.h>
+#include <termios.h>
 
 int flag = 1;
 char inputString[200];
+char *command;
+char *var1;
 
 struct job {
   char *command;
   int jobid;
   int pid;
-
-
 };
 
 void parse(char *input) {
+
+}
+
+void execute(char *input) {
+  int curr_input = strdup(input);
+  
 }
 
 void cd(const char *p) {
@@ -31,6 +38,32 @@ void cd(const char *p) {
     if (chdir(p) == -1) {
       printf(" %s: No such file or directory\n", strerror(errno));
     }
+  }
+}
+
+void showActiveJobs() {
+
+}
+
+void shellCommand() {
+  if (strcmp("exit", command) == 0 || strcmp("quit", command) == 0) {
+    flag = 0;
+  }
+
+  if (strcmp("cd", command) == 0) {
+    cd(var1);
+  }
+
+  if (strcmp("jobs", command) == 0) {
+    showActiveJobs();
+  }
+
+  if (strcmp("set", command) == 0) {
+
+  }
+
+  if (strcmp("ls", command) ==0) {
+    //ls();
   }
 }
 
@@ -71,21 +104,20 @@ int main(int argc, char **argv, char **envp) {
   printf("┃████████████████████████████████████████████████████████████████┃\n");
   printf("┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛\n");
 
+ 
+
   do {
     printf(":$ ");
-    fgets (inputString, 200, stdin);
+    fgets(inputString, 200, stdin);
     trimwhitespace(inputString);
-    if (strcmp(inputString, "exit") == 0 || strcmp(inputString, "quit") == 0) {
-      flag = 0;
-    }
-    if (strcmp(inputString, "cd") == 0) {
-      char *i;
-      cd(i);
-    }
+    command = strtok(inputString, " ");
+    var1 = strtok(NULL, " ");
+    printf("Command: %s\n", command);
+    printf("First Variable: %s\n", var1);
+    shellCommand();
 
   } while (flag);
 
 
   return(0);
 }
-
