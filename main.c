@@ -19,6 +19,8 @@ static pid_t QuashPid;
 static pid_t QuashPGid;
 static int QuashTerminal;
 
+int fileOut,fileIn;
+
 struct job {
   char *command;
   int jobid;
@@ -26,6 +28,38 @@ struct job {
 };
 
 void parse(char *input) {
+
+}
+
+int setPath() {
+    int i, temp, len;
+    i = 0;
+    len = 0;
+    char *pathcmd = (char *)malloc(sizeof(char)*50);
+    /*for (int i =0; i<50; i++) {
+        pathcmd[i] = '\0';
+        i++;
+    }*/
+    char *path = var1;
+    len = strlen(var1);
+
+    if(strncmp(path, "HOME=", 5) == 0) {
+        strncpy(pathcmd, path + 5, (len - 5));
+        printf("Home is set to: %s, \n", pathcmd);
+        if((setenv("HOME",pathcmd,1)) ==- 1){
+            printf("Home was not correctly set.\n");
+        }
+    } else if(strncmp(path, "PATH=", 5) == 0) {
+        strncpy(pathcmd, path + 5, (len - 5));
+        printf("Path is set to: %s, \n", pathcmd);
+        if((setenv("PATH",pathcmd,1)) ==- 1){
+            printf("Path was not correctly set.\n");
+        }
+    } else {
+        printf("set command was not understood.\n");
+    }
+    
+    return 1;
 
 }
 
@@ -62,11 +96,25 @@ void shellCommand() {
   }
 
   if (strcmp("set", command) == 0) {
-
+    int setter = setPath();
   }
 
-  if (strcmp("ls", command) ==0) {
-    //ls();
+  //if (strcmp("ls", command) ==0) {
+    //ls();??
+  //}
+    
+  else {
+      int position = 0;
+      char *filename = NULL;
+      filename = var1;
+      //command[strlen(command -1)] = '\0';
+      fileIn = open(filename, O_RDONLY);
+      dup2(fileIn, STDIN_FILENO);
+      close(fileIn);
+      if (execvp(*command, command) == -1)
+          perror("quash");
+      close(fileIn);
+      exit(0);
   }
 }
 
