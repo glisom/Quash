@@ -13,6 +13,7 @@
 #include <readline/readline.h>
 #include <readline/history.h>
 #define true 1
+#define false 0
 
 char* rm_whitespace(char* str) {
     char *end;
@@ -36,39 +37,15 @@ void cd(char *p) {
     }
 }
 
-void quashPipe(char* cmd, char* cmd2) {
-    int spipe[2];
-    int status;
-    pipe(spipe);
-    pid_t pid;
-    pid = fork();
-    
-    if (pid == 0) {
-        dup2(spipe[1], STDOUT_FILENO);
-        close(spipe[0]);
-        close(spipe[1]);
-        parse(rm_whitespace(cmd));
-        exit(0);
-    } else {
-        dup2(spipe[0], STDIN_FILENO);
-        close(spipe[0]);
-        close(spipe[1]);
-        waitpid(pid, &status, 0);
-        parse(rm_whitespace(cmd2));
-    }
-}
-
 int setPath(char* input) {
-    char* ptype = strtok(input, '=');
-    char* path = strtok(NULL, '\0');
+    char* setter = strtok(input, "=");
+    char* ptype = setter;
+    setter = strtok(NULL, "\0");
+    char* path = setter;
     
-    if((setenv(ptype,path,1)) ==- 1) {
+    if((setenv(ptype,path,1)) == - 1) {
         printf("%s was not correctly set.\n", ptype);
     }
-    else {
-        printf("set command was not understood.\n");
-    }
-    
     return 1;
     
 }
@@ -80,62 +57,82 @@ void displayJobs() {
 void parse_cmd(char* input) {
     char* command;
     char* args[20];
+    for (int i = 0; i < 20; i++) {args[i] = NULL;}
     int args_count = 0;
     char* cur_input = strdup(input);
     command = strtok(input, " ");
-    args[args_count] = strtok(NULL, " ");
-    while (args[args_count] != NULL) {
-        args[args_count] = strtok(NULL, " ");
+    while (command != NULL) {
+        args[args_count] = command;
+        command = strtok(NULL, " ");
         args_count++;
+        
     }
+    char* just_args[19];
+    for (int i = 0; i < 19; i++) {just_args[i] = NULL;}
+    for (int i = 1; i < 20; i++) {if (args[i] != NULL) {just_args[i - 1] = args[i];}}
     char* is_backgrd = strchr(cur_input, '&');
     char* is_pipe = strchr(cur_input, '|');
     char* filedir_in = strchr(cur_input, '<');
     char* filedir_out = strchr(cur_input, '>');
-    int change_dir = strcmp(command, "cd");
-    int quit = strcmp(command, "quit");
-    int exit = strcmp(command, "exit");
-    int set = strcmp(command, "set");
-    int jobs = strcmp(command, "jobs");
+    int change_dir = strcmp("cd", args[0]);
+    int set = strcmp(args[0], "set");
+    int jobs = strcmp(args[0], "jobs");
     
-    if (change_dir) {
-        cd(args[0]);
+    if (change_dir == 0) {
+        cd(args[1]);
     }
-    if (quit || exit) {
-        exit(EXIT_SUCCESS);
+    else if (set == 0) {
+        setPath(args[1]);
     }
-    if (set) {
-        setPath(args[0]);
-    }
-    if (jobs) {
+    else if (jobs == 0) {
         displayJobs();
     }
-    if (is_backgrd != NULL) {
+    else if (is_backgrd != NULL) {
         
     }
-    if (is_pipe != NULL) {
-        char* first_cmd = strtok(cur_input, "|\0");
-        char* second_cmd = strtok(NULL,"\0");
-        quashPipe(first_cmd, second_cmd);
+    else if (is_pipe != NULL) {
+        char* part = strtok(cur_input, "|\0");
+        char* first_cmd = part;
+        part = strtok(NULL, "\0");
+        char* second_cmd = part;
+        int spipe[2];
+        int status;
+        pipe(spipe);
+        pid_t pid;
+        pid = fork();
+        if (pid == 0) {
+            dup2(spipe[1], STDOUT_FILENO);
+            close(spipe[0]);
+            close(spipe[1]);
+            parse_cmd(rm_whitespace(first_cmd));
+            exit(0);
+        } else {
+            dup2(spipe[0], STDIN_FILENO);
+            close(spipe[0]);
+            close(spipe[1]);
+            waitpid(pid, &status, 0);
+            parse_cmd(rm_whitespace(second_cmd));
+        }
     }
-    if (filedir_in != NULL) {
+    else if (filedir_in != NULL) {
         
     }
-    if (filedir_out != NULL) {
+    else if (filedir_out != NULL) {
         
     }
     else {
+        /*
         if (strlen(cur_input) > 0) {
-            if(execvp(command, args) < 0) {
+            if(execlp(args[0], cur_input, NULL) < 0) {
                 fprintf(stderr, "That is an invalid command\n");
                 exit(0);
             }
         } else {
-            if(execvp(command, NULL) < 0) {
+            if(execlp(args[0], NULL) < 0) {
                 fprintf(stderr, "That is an invalid command\n");
                 exit(0);
             }
-        }
+        }*/
     }
     
 }
@@ -159,19 +156,24 @@ int main(int argc, char** argv, char** envp) {
     printf("┃██*█**████████████████████████████████████████████████████*█████┃\n");
     printf("┃████████████████████████████████████████████████████████████████┃\n");
     printf("┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛\n");
-
+    rl_bind_key('\t', rl_complete);
+    int flag = true;
     char* input, prompt[128];
     do {
         snprintf(prompt, sizeof(prompt), "[%s:%s]$ ", getenv("USER"), getcwd(NULL, 1024));
         input = readline(prompt);
         add_history(input);
-        if (strcmp("exit", input) != 0) {
-            input = rm_whitespace(input);
-            parse_cmd(input);
+        input = rm_whitespace(input);
+        if (strcmp("exit", input) != 0 && strcmp("quit", input) != 0) {
+            if (strlen(input) > 1) {
+                input = rm_whitespace(input);
+                parse_cmd(input);
+            }
+        } else {
+            flag = false;
         }
-
-    
-    } while (true);
+        free(input);
+    } while (flag);
 
     return 0;
 }
