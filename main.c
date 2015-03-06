@@ -14,9 +14,9 @@
 int flag = 1;
 int status;
 char inputString[200];
-char *command;
-char **args;
-char *var1;
+char* command;
+char** args;
+char* var1;
 static pid_t QuashPid;
 static pid_t QuashPGid;
 static int QuashTerminal;
@@ -24,20 +24,20 @@ struct termios Quash_tmodes;
 int position;
 #define null '\0'
 struct Job {
-    char *command;
-    char **args;
-    char *filename;
+    char* command;
+    char** args;
+    char* filename;
     int jobid;
     int pid;
-    
+
 };
-static struct Job *jobs[10];
+static struct Job* jobs[10];
 int job_count = 0;
 
 
 void parse(struct Job* job) {
     int pos = 0;
-    static char *delim = ' ';
+    static char* delim = ' ';
     job->command = strtok(inputString, delim);
     while (inputString != '\0') {
         job->args[pos] = strtok(NULL, delim);
@@ -50,12 +50,12 @@ int setPath() {
     int i, temp, len;
     i = 0;
     len = 0;
-    char *pathcmd = (char *)malloc(sizeof(char)*50);
+    char* pathcmd = (char *)malloc(sizeof(char)*50);
     /*for (int i =0; i<50; i++) {
-        pathcmd[i] = '\0';
-        i++;
-    }*/
-    char *path = var1;
+      pathcmd[i] = '\0';
+      i++;
+      }*/
+    char* path = var1;
     len = strlen(var1);
 
     if(strncmp(path, "HOME=", 5) == 0) {
@@ -73,35 +73,35 @@ int setPath() {
     } else {
         printf("set command was not understood.\n");
     }
-    
+
     return 1;
 
 }
 /*
-int symbol(char* t) {
-    position = 0;
-    while (inputString[position]) {
-        if (t) {
-            if (strcmp() {
-                <#statements#>
-            }
-        }
-    }
-}
-*/
-void execute(char *input) {
-  int curr_input = strdup(input);
-  
+   int symbol(char* t) {
+   position = 0;
+   while (inputString[position]) {
+   if (t) {
+   if (strcmp() {
+   <#statements#>
+   }
+   }
+   }
+   }
+   */
+void execute(char* input) {
+    int curr_input = strdup(input);
+
 }
 
-void cd(const char *p) {
-  if (p == NULL) {
-    chdir(getenv("HOME"));
-  } else {
-    if (chdir(p) == -1) {
-      printf(" %s: No such file or directory\n", strerror(errno));
+void cd(const char* p) {
+    if (p == NULL) {
+        chdir(getenv("HOME"));
+    } else {
+        if (chdir(p) == -1) {
+            printf(" %s: No such file or directory\n", strerror(errno));
+        }
     }
-  }
 }
 
 void showActiveJobs() {
@@ -109,53 +109,53 @@ void showActiveJobs() {
 }
 
 void shellCommand() {
-  if (strcmp("exit", command) == 0 || strcmp("quit", command) == 0) {
-    flag = 0;
-  }
+    if (strcmp("exit", command) == 0 || strcmp("quit", command) == 0) {
+        flag = 0;
+    }
 
-  if (strcmp("cd", command) == 0) {
-    cd(var1);
-  }
+    if (strcmp("cd", command) == 0) {
+        cd(var1);
+    }
 
-  if (strcmp("jobs", command) == 0) {
-    showActiveJobs();
-  }
+    if (strcmp("jobs", command) == 0) {
+        showActiveJobs();
+    }
 
-  if (strcmp("set", command) == 0) {
-    int setter = setPath();
-  }
-  else {
-      //just to test cd and path stuff, not good just uses sh.
-      system(inputString);
-  }
-/*
-  //if (strcmp("ls", command) ==0) {
+    if (strcmp("set", command) == 0) {
+        int setter = setPath();
+    }
+    else {
+        //just to test cd and path stuff, not good just uses sh.
+        system(inputString);
+    }
+    /*
+    //if (strcmp("ls", command) ==0) {
     //ls();??
-  //}
-    
-  else {
-      //????
-      int position = 0;
-      char *filename = NULL;
-      filename = var1;
-      //command[strlen(command -1)] = '\0';
-      fileIn = open(filename, O_RDONLY);
-      dup2(fileIn, STDIN_FILENO);
-      close(fileIn);
-      if (execvp(*command, command) == -1)
-          perror("quash");
-      close(fileIn);
-      exit(0);
-  }
- */
+    //}
+
+    else {
+    //????
+    int position = 0;
+    char *filename = NULL;
+    filename = var1;
+    //command[strlen(command -1)] = '\0';
+    fileIn = open(filename, O_RDONLY);
+    dup2(fileIn, STDIN_FILENO);
+    close(fileIn);
+    if (execvp(*command, command) == -1)
+    perror("quash");
+    close(fileIn);
+    exit(0);
+    }
+    */
 }
 
-void quashPipe(char *cmd1[], char *cmd2[]) {
+void quashPipe(char* cmd1[], char* cmd2[]) {
     int spipe[2];
     pipe(spipe);
     pid_t pid;
     pid = fork();
-    
+
     if (pid == 0) {
         dup2(spipe[1], STDOUT_FILENO);
         close(spipe[0]);
@@ -175,55 +175,55 @@ void quashPipe(char *cmd1[], char *cmd2[]) {
     }
 }
 
-void launchJob(char *cmd[], char *filename) {
-    
+void launchJob(char* cmd[], char* filename) {
+
 }
 
-char *trimwhitespace(char *str)
+char* trimwhitespace(char *str)
 {
-    char *end;
+    char* end;
     // Trim leading space
     while(isspace(*str)) str++;
-      //
-      if(*str == 0)  // All spaces?
-      return str;
-      // Trim trailing space
-      end = str + strlen(str) - 1;
-      while(end > str && isspace(*end)) end--;
-      // Write new null terminator
-      *(end+1) = 0;
-      return str;
+    //
+    if(*str == 0)  // All spaces?
+        return str;
+    // Trim trailing space
+    end = str + strlen(str) - 1;
+    while(end > str && isspace(*end)) end--;
+    // Write new null terminator
+    *(end+1) = 0;
+    return str;
 }
 
 int main(int argc, char **argv, char **envp) {
 
-  //Pretty intro
-  printf("┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n");
-  printf("┃███████*███████████████████████████████████*████████████████████┃\n");
-  printf("┃█*████████████████████████████████████████████████*█████████████┃\n");
-  printf("┃█████*██████████████████████████████████████████████████████████┃\n");
-  printf("┃█*██████*******████**█████**█████**██████********█**██████**████┃\n");
-  printf("┃███████**/////**██/**████/**████****████**//////█/**█████/**████┃\n");
-  printf("┃██████**█████//**█/**████/**███**//**██/**███████/**█████/**████┃\n");
-  printf("┃█████/**██████/**█/**████/**██**██//**█/*********/**********████┃\n");
-  printf("┃█████/**████**/**█/**████/**█**********////////**/**//////**████┃\n");
-  printf("┃█████//**██//█**██/**████/**/**//////**███████/**/**█████/**████┃\n");
-  printf("┃██████//*******█**//*******█/**█████/**█********█/**█████/**████┃\n");
-  printf("┃███████///////█//██///////██//██████//█////////██//██████//█████┃\n");
-  printf("┃████████████████████████████████████████████████████████████████┃\n");
-  printf("┃█████*██████ Written by Alek Eskilison and Grant Isom █████*████┃\n");
-  printf("┃██*█**████████████████████████████████████████████████████*█████┃\n");
-  printf("┃████████████████████████████████████████████████████████████████┃\n");
-  printf("┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛\n");
+    //Pretty intro
+    printf("┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓\n");
+    printf("┃███████*███████████████████████████████████*████████████████████┃\n");
+    printf("┃█*████████████████████████████████████████████████*█████████████┃\n");
+    printf("┃█████*██████████████████████████████████████████████████████████┃\n");
+    printf("┃█*██████*******████**█████**█████**██████********█**██████**████┃\n");
+    printf("┃███████**/////**██/**████/**████****████**//////█/**█████/**████┃\n");
+    printf("┃██████**█████//**█/**████/**███**//**██/**███████/**█████/**████┃\n");
+    printf("┃█████/**██████/**█/**████/**██**██//**█/*********/**********████┃\n");
+    printf("┃█████/**████**/**█/**████/**█**********////////**/**//////**████┃\n");
+    printf("┃█████//**██//█**██/**████/**/**//////**███████/**/**█████/**████┃\n");
+    printf("┃██████//*******█**//*******█/**█████/**█********█/**█████/**████┃\n");
+    printf("┃███████///////█//██///////██//██████//█////////██//██████//█████┃\n");
+    printf("┃████████████████████████████████████████████████████████████████┃\n");
+    printf("┃█████*██████ Written by Alek Eskilison and Grant Isom █████*████┃\n");
+    printf("┃██*█**████████████████████████████████████████████████████*█████┃\n");
+    printf("┃████████████████████████████████████████████████████████████████┃\n");
+    printf("┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛\n");
 
-  QuashPid = getpid();
-  QuashTerminal = STDIN_FILENO;
+    QuashPid = getpid();
+    QuashTerminal = STDIN_FILENO;
 
     if(isatty(QuashTerminal)) {
-    while (tcgetpgrp(QuashTerminal) != (QuashPGid = getpgrp()))
-                              kill(QuashPid, SIGTTIN);
-      
-      /* Ignore interactive and job-control signals.  */
+        while (tcgetpgrp(QuashTerminal) != (QuashPGid = getpgrp()))
+            kill(QuashPid, SIGTTIN);
+
+        /* Ignore interactive and job-control signals.  */
         signal (SIGINT, SIG_IGN);
         signal (SIGQUIT, SIG_IGN);
         signal (SIGTSTP, SIG_IGN);
@@ -231,31 +231,31 @@ int main(int argc, char **argv, char **envp) {
         signal (SIGTTOU, SIG_IGN);
         signal (SIGCHLD, SIG_IGN);
         QuashPGid = getpid();
-        
+
         if (setpgid(QuashPGid, QuashPGid) < 0) {
             perror("Couldn't put quaas in its own process group");
             exit(1);
         }
-        
+
         tcsetpgrp(QuashTerminal, QuashPGid);
         tcgetattr(QuashTerminal, QuashPGid);
-  
-  } else {
-      printf("Quash is not in a terminal enviroment.\n Quitting...\n");
-  }
 
-  do {
-      struct Job *job;
-      jobs[job_count] = job;
-      job_count++;
-      printf(":$ ");
-      fgets(inputString, 200, stdin);
-      trimwhitespace(inputString);
-      parse(job);
-      shellCommand();
+    } else {
+        printf("Quash is not in a terminal enviroment.\n Quitting...\n");
+    }
 
-  } while (flag);
+    do {
+        struct Job* job;
+        jobs[job_count] = job;
+        job_count++;
+        printf(":$ ");
+        fgets(inputString, 200, stdin);
+        trimwhitespace(inputString);
+        parse(job);
+        shellCommand();
+
+    } while (flag);
 
 
-  return(0);
+    return(0);
 }
