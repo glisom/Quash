@@ -15,6 +15,15 @@
 #define true 1
 #define false 0
 
+struct Job {
+    int pid;
+    int id;
+    char* cmd;
+};
+
+static int job_count;
+static struct Job jobs[20];
+
 char* rm_whitespace(char* str) {
     char *end;
 
@@ -51,7 +60,15 @@ int setPath(char* input) {
 }
 
 void displayJobs() {
-    printf("The pokemon got away...");
+    int i;
+    printf("\nActive jobs:\n");
+    printf("| %7s  | %7s | %7s |\n", "Job ID", "PID  ", "Command");
+    for(i=0; i < job_count; i++) {
+        if(kill(jobs[i].pid, 0) == 0) {
+            printf("|  [%7d] | %7d | %7s |\n", jobs[i].id, jobs[i].pid,
+                   jobs[i].cmd);
+        }
+    }
 }
 
 void parse_cmd(char* input) {
@@ -65,7 +82,6 @@ void parse_cmd(char* input) {
         args[args_count] = command;
         command = strtok(NULL, " ");
         args_count++;
-        
     }
     char* just_args[19];
     for (int i = 0; i < 19; i++) {just_args[i] = NULL;}
