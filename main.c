@@ -126,7 +126,6 @@ void parse_cmd(char* input) {
     int change_dir = strcmp("cd", args[0]);
     int set = strcmp(args[0], "set");
     int jobs_com = strcmp(args[0], "jobs");
-    int kill = strcmp(args[0], "kill");
     
     if (change_dir == 0) {
         cd(args[1]);
@@ -242,10 +241,6 @@ void parse_cmd(char* input) {
                 fprintf(stderr, "%s\n", "Darn ,the pokemon fled...\n");
             }
         }
-    }
-    else if (kill != NULL) {
-        printf("%s %s", command[1], command[2]);
-       // kill(command[1], command[2]);
     }
     else {
         execute(args);
