@@ -21,7 +21,7 @@ struct Job {
     char* cmd;
 };
 
-static int job_count;
+static int job_count = 0;
 static struct Job jobs[20];
 
 char* rm_whitespace(char* str) {
@@ -52,7 +52,7 @@ int setPath(char* input) {
     setter = strtok(NULL, "\0");
     char* path = setter;
     
-    if((setenv(ptype,path,1)) == - 1) {
+    if ((setenv(ptype,path,1)) == - 1) {
         printf("%s was not correctly set.\n", ptype);
     }
     return 1;
@@ -63,8 +63,8 @@ void displayJobs() {
     int i;
     printf("\nActive jobs:\n");
     printf("| %7s  | %7s | %7s |\n", "Job ID", "PID  ", "Command");
-    for(i=0; i < job_count; i++) {
-        if(kill(jobs[i].pid, 0) == 0) {
+    for (i=0; i < job_count; i++) {
+        if (kill(jobs[i].pid, 0) == 0) {
             printf("|  [%7d] | %7d | %7s |\n", jobs[i].id, jobs[i].pid,
                    jobs[i].cmd);
         }
@@ -77,12 +77,12 @@ void execute(char** cmds) {
     pid = fork();
     if (pid == 0) {
         if (strlen(cmds[0]) > 0) {
-            if(execvp(cmds[0], cmds) < 0) {
+            if (execvp(cmds[0], cmds) < 0) {
                 fprintf(stderr, "That is an invalid command\n");
                 exit(0);
             }
         } else {
-            if(execvp(cmds[0], NULL) < 0) {
+            if (execvp(cmds[0], NULL) < 0) {
                 fprintf(stderr, "That is an invalid command\n");
                 exit(0);
             }
@@ -90,17 +90,18 @@ void execute(char** cmds) {
     }
     else {
         waitpid(pid, &status, 0);
-        if(status == 1) {
+        if (status == 1) {
             fprintf(stderr, "%s\n", "Darn ,the pokemon fled...\n");
         }	
     }
 }
 
 void parse_cmd(char* input) {
+    int i;
     char* command;
     int fout = 1994;
     char* args[20];
-    for (int i = 0; i < 20; i++) {args[i] = NULL;}
+    for (i = 0; i < 20; i++) {args[i] = NULL;}
     int args_count = 0;
     char* cur_input = strdup(input);
     command = strtok(input, " ");
@@ -110,9 +111,11 @@ void parse_cmd(char* input) {
         args_count++;
     }
     char* just_args[19];
-    for (int i = 0; i < 19; i++) {just_args[i] = NULL;}
-    for (int i = 1; i < 20; i++) {if (args[i] != NULL) {just_args[i - 1] = args[i];}}
+    for (i = 0; i < 19; i++) {just_args[i] = NULL;}
+    for (i = 1; i < 20; i++) {if (args[i] != NULL) {just_args[i - 1] = args[i];}}
     char* is_backgrd = strchr(cur_input, '&');
+    char* bg_command = strdup(input);
+    bg_command[strlen(input) - 1] = 0;
     char* is_pipe = strchr(cur_input, '|');
     char* filedir_in = strchr(cur_input, '<');
     char* filedir_out = strchr(cur_input, '>');
@@ -130,7 +133,33 @@ void parse_cmd(char* input) {
         displayJobs();
     }
     else if (is_backgrd != NULL) {
-        
+        int status;
+        pid_t pid;
+        pid_t sid; 
+        pid = fork();
+        if (pid == 0) {
+            sid = setsid();
+            if (sid < 0 ) {
+                fprintf(stderr, "Could not create the new process\n");
+                exit(0);
+            }
+            printf("New process with pid %d running out of %d processes\n", getpid(), job_count + 1);
+            parse_cmd(bg_command);
+            printf("The process with pid %d has finished\n", getpid());
+            kill(getpid(), -9);
+            exit(0);
+        }
+        else {
+            printf("%d", job_count);
+            struct Job new_job = {.pid = 0, .id = 0, .cmd = ""};
+            printf("%d", new_job.pid);
+//            jobs[job_count].pid = pid;
+//            jobs[job_count].id = job_count;
+//            jobs[job_count].cmd = command;
+//            jobs[0] = new_job;
+            job_count = job_count + 1;
+            while(waitid(pid, NULL, WEXITED | WNOHANG) > 0) {}
+        }
     }
     else if (is_pipe != NULL) {
         char* part = strtok(cur_input, "|\0");
@@ -241,6 +270,12 @@ int main(int argc, char** argv, char** envp) {
     rl_bind_key('\t', rl_complete);
     int flag = true;
     char* input, prompt[128];
+    job_count = 0;
+    int i;
+    for(i = 0; i < 20; i++) {
+//        jobs[i] = ;
+        printf("%d", jobs[i].pid);
+    }
     do {
         snprintf(prompt, sizeof(prompt), "[%s:%s]$ ", getenv("USER"), getcwd(NULL, 1024));
         input = readline(prompt);
