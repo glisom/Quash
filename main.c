@@ -123,6 +123,7 @@ void parse_cmd(char* input) {
     char* is_pipe = strchr(cur_input, '|');
     char* filedir_in = strchr(cur_input, '<');
     char* filedir_out = strchr(cur_input, '>');
+    char* kill_proc = strstr(cur_input, "kill");
     int change_dir = strcmp("cd", args[0]);
     int set = strcmp(args[0], "set");
     int jobs_com = strcmp(args[0], "jobs");
@@ -263,6 +264,11 @@ void parse_cmd(char* input) {
                 fprintf(stderr, "%s\n", "Darn ,the pokemon fled...\n");
             }
         }
+    }
+    else if (kill_proc != NULL) {
+        long int pid = strtol(args[2], NULL, 0);
+        long int signal = strtol(args[1], NULL, 0);
+        kill(args[2], args[1]);
     }
     else {
         execute(args);
