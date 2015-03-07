@@ -186,8 +186,8 @@ void parse_cmd(char* input) {
     else if (filedir_in != NULL) {
         char* cmd_f_file = NULL;
         char* new_args[20];
-        for (int i = 0; i < 20; i++) {new_args[i] = NULL;}
-        int i = 1;
+        int i;
+        for (i = 0; i < 20; i++) {new_args[i] = NULL;}
         size_t len = 0;
         ssize_t read;
         FILE* file_d;
