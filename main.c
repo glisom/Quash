@@ -50,7 +50,7 @@ void cd(char *p) {
     }
 }
 
-int setPath(char* input) {
+int set_path(char* input) {
     char* setter = strtok(input, "=");
     char* ptype = setter;
     setter = strtok(NULL, "\0");
@@ -63,7 +63,7 @@ int setPath(char* input) {
     
 }
 
-void displayJobs() {
+void display_jobs() {
     int i;
     printf("\nActive jobs:\n");
     printf("| %7s  | %7s | %7s |\n", "Job ID", "PID  ", "Command");
@@ -105,7 +105,9 @@ void parse_cmd(char* input) {
     char* command;
     int fout = 1994;
     char* args[20];
-    for (i = 0; i < 20; i++) {args[i] = NULL;}
+    for (i = 0; i < 20; i++) {
+        args[i] = NULL;
+    }
     int args_count = 0;
     char* cur_input = strdup(input);
     command = strtok(input, " ");
@@ -115,8 +117,14 @@ void parse_cmd(char* input) {
         args_count++;
     }
     char* just_args[19];
-    for (i = 0; i < 19; i++) {just_args[i] = NULL;}
-    for (i = 1; i < 20; i++) {if (args[i] != NULL) {just_args[i - 1] = args[i];}}
+    for (i = 0; i < 19; i++) {
+        just_args[i] = NULL;
+    }
+    for (i = 1; i < 20; i++) {
+        if (args[i] != NULL) {
+            just_args[i - 1] = args[i];
+        }
+    }
     char* is_backgrd = strchr(cur_input, '&');
     char* bg_command = strdup(input);
     bg_command[strlen(input) - 1] = 0;
@@ -132,10 +140,10 @@ void parse_cmd(char* input) {
         cd(args[1]);
     }
     else if (set == 0) {
-        setPath(args[1]);
+        set_path(args[1]);
     }
     else if (jobs_com == 0) {
-        displayJobs();
+        display_jobs();
     }
     else if (is_backgrd != NULL) {
         int status;
@@ -158,6 +166,7 @@ void parse_cmd(char* input) {
             struct Job new_job = {.pid = pid, .id = job_count, .cmd = bg_command};
             jobs[job_count] = new_job;
             job_count++;
+            while(waitid(pid, NULL, WNOHANG | WEXITED) > 0) {}
         }
     }
     else if (is_pipe != NULL) {
@@ -191,7 +200,9 @@ void parse_cmd(char* input) {
         char* cmd_f_file = NULL;
         char* new_args[20];
         int i;
-        for (i = 0; i < 20; i++) {new_args[i] = NULL;}
+        for (i = 0; i < 20; i++) {
+            new_args[i] = NULL;
+        }
         size_t len = 0;
         ssize_t read;
         FILE* file_d;
@@ -266,9 +277,10 @@ void parse_cmd(char* input) {
         }
     }
     else if (kill_proc != NULL) {
-        long int pid = strtol(args[2], NULL, 0);
-        long int signal = strtol(args[1], NULL, 0);
-        kill(args[2], args[1]);
+        int pid = (int) strtol(args[2], NULL, 0);
+        int signal = (int) strtol(args[1], NULL, 0);
+        printf("Killing pid %d with signal %d\n", pid, signal);
+        kill(pid, -9);
     }
     else {
         execute(args);
