@@ -99,6 +99,7 @@ void execute(char** cmds) {
 void parse_cmd(char* input) {
     int i;
     char* command;
+    int fout = 1994;
     char* args[20];
     for (i = 0; i < 20; i++) {args[i] = NULL;}
     int args_count = 0;
@@ -168,30 +169,78 @@ void parse_cmd(char* input) {
         pid = fork();
         if (pid == 0) {
             dup2(spipe[1], STDOUT_FILENO);
+            parse_cmd(rm_whitespace(first_cmd));
             close(spipe[0]);
             close(spipe[1]);
-            parse_cmd(rm_whitespace(first_cmd));
             exit(0);
         }
         pid2 = fork();
         if (pid2 == 0) {
             dup2(spipe[0], STDIN_FILENO);
+            parse_cmd(rm_whitespace(second_cmd));
             close(spipe[0]);
             close(spipe[1]);
-            parse_cmd(rm_whitespace(second_cmd));
             exit(0);
         }
     }
     else if (filedir_in != NULL) {
-        
+        char* cmd_f_file = NULL;
+        char* new_args[20];
+        for (int i = 0; i < 20; i++) {new_args[i] = NULL;}
+        int i = 1;
+        size_t len = 0;
+        ssize_t read;
+        FILE* file_d;
+        int status;
+        pid_t pid;
+        pid = fork();
+        if (strcmp("quash", args[0]) == 0) {
+            file_d = fopen(args[2], "r");
+            do {
+                read = getline(&cmd_f_file, &len, file_d);
+                if (pid == 0) {
+                    parse_cmd(rm_whitespace(cmd_f_file));
+                } else {
+                    waitpid(pid, &status, 0);
+                    if(status == 1) {
+                        fprintf(stderr, "%s\n", "Darn ,the pokemon fled...\n");
+                    }
+                }
+            } while (read != -1);
+            fclose(file_d);
+        } else {
+            
+        }
     }
     else if (filedir_out != NULL) {
-        
+        int i;
+        int position = 0;
+        while (position == 0) {
+            if (strcmp(">",args[i]) == 0) {
+                position = i;
+            }
+            i++;
+        }
+        char* filename = args[position + 1];
+        fout = open(filename, O_WRONLY | O_TRUNC | O_CREAT, S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR);
+        dup2(fout, STDOUT_FILENO);
+        char* n_input = strtok(input, ">");
+        int status;
+        pid_t pid;
+        pid = fork();
+        if (pid == 0) {
+            parse_cmd(rm_whitespace(n_input));
+            close(fout);
+        } else {
+            waitpid(pid, &status, 0);
+            if(status == 1) {
+                fprintf(stderr, "%s\n", "Darn ,the pokemon fled...\n");
+            }
+        }
     }
     else {
         execute(args);
     }
-    
 }
 
 
@@ -220,7 +269,6 @@ int main(int argc, char** argv, char** envp) {
     do {
         snprintf(prompt, sizeof(prompt), "[%s:%s]$ ", getenv("USER"), getcwd(NULL, 1024));
         input = readline(prompt);
-        //add_history(input);
         input = rm_whitespace(input);
         if (strcmp("exit", input) != 0 && strcmp("quit", input) != 0) {
             if (strlen(input) > 1) {
