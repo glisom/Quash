@@ -82,7 +82,7 @@ void execute(char** cmds) {
                 exit(0);
             }
         } else {
-            if (execvp(cmds[0], NULL) < 0) {
+            if (execv(cmds[0], cmds) < 0) {
                 fprintf(stderr, "That is an invalid command\n");
                 exit(0);
             }
@@ -153,7 +153,7 @@ void parse_cmd(char* input) {
             struct Job new_job = {.pid = pid, .id = job_count, .cmd = bg_command};
             jobs[job_count] = new_job;
             job_count++;
-            while(waitid(pid, NULL, WEXITED | WNOHANG) > 0) {}
+            //while(waitid(pid, NULL, WEXITED | WNOHANG) > 0) {}
         }
     }
     else if (is_pipe != NULL) {
@@ -209,7 +209,29 @@ void parse_cmd(char* input) {
             } while (read != -1);
             fclose(file_d);
         } else {
-            
+            file_d = fopen(args[2], "r");
+            int x = 0;
+            int position = 0;
+            while (position == 0) {
+                if (strcmp("<",args[x]) == 0) {
+                    position = x;
+                }
+                x++;
+            }
+            while ((read = getline(&cmd_f_file, &len, file_d)) == -1) {
+                char* temp_i = strtok(cmd_f_file, " \0");
+                args[x] = temp_i;
+                x++;
+                printf("%s\n",args[x]);
+            }
+            if (pid == 0) {
+                execute(args);
+            } else {
+                waitpid(pid, &status, 0);
+                if(status == 1) {
+                    fprintf(stderr, "%s\n", "Darn ,the pokemon fled...\n");
+                }
+            }
         }
     }
     else if (filedir_out != NULL) {
@@ -221,16 +243,17 @@ void parse_cmd(char* input) {
             }
             i++;
         }
-        char* filename = args[position + 1];
-        fout = open(filename, O_WRONLY | O_TRUNC | O_CREAT, S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR);
-        dup2(fout, STDOUT_FILENO);
-        char* n_input = strtok(input, ">");
         int status;
         pid_t pid;
         pid = fork();
         if (pid == 0) {
+            char* filename = args[position + 1];
+            fout = open(filename, O_WRONLY | O_TRUNC | O_CREAT, S_IRUSR | S_IRGRP | S_IWGRP | S_IWUSR);
+            dup2(fout, STDOUT_FILENO);
+            char* n_input = strtok(input, ">");
             parse_cmd(rm_whitespace(n_input));
             close(fout);
+            exit(0);
         } else {
             waitpid(pid, &status, 0);
             if(status == 1) {
