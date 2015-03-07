@@ -1,0 +1,10 @@
+EECS678Project1.pdf
+Makefile
+Quash
+README.md
+a.txt
+main.c
+main.c.bak
+main.o
+main2.c
+[grantisom:/Users/grantisom/Documents/Spring '15/EECS 678/Quash]$ 
