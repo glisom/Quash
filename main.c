@@ -71,6 +71,31 @@ void displayJobs() {
     }
 }
 
+void execute(char** cmds) {
+    int status;
+    pid_t pid;
+    pid = fork();
+    if (pid == 0) {
+        if (strlen(cmds[0]) > 0) {
+            if(execvp(cmds[0], cmds) < 0) {
+                fprintf(stderr, "That is an invalid command\n");
+                exit(0);
+            }
+        } else {
+            if(execvp(cmds[0], NULL) < 0) {
+                fprintf(stderr, "That is an invalid command\n");
+                exit(0);
+            }
+        }
+    }
+    else {
+        waitpid(pid, &status, 0);
+        if(status == 1) {
+            fprintf(stderr, "%s\n", "Darn ,the pokemon fled...\n");
+        }	
+    }
+}
+
 void parse_cmd(char* input) {
     char* command;
     char* args[20];
@@ -115,6 +140,7 @@ void parse_cmd(char* input) {
         int status;
         pipe(spipe);
         pid_t pid;
+        pid_t pid2;
         pid = fork();
         if (pid == 0) {
             dup2(spipe[1], STDOUT_FILENO);
@@ -122,12 +148,14 @@ void parse_cmd(char* input) {
             close(spipe[1]);
             parse_cmd(rm_whitespace(first_cmd));
             exit(0);
-        } else {
+        }
+        pid2 = fork();
+        if (pid2 == 0) {
             dup2(spipe[0], STDIN_FILENO);
             close(spipe[0]);
             close(spipe[1]);
-            waitpid(pid, &status, 0);
             parse_cmd(rm_whitespace(second_cmd));
+            exit(0);
         }
     }
     else if (filedir_in != NULL) {
@@ -137,18 +165,7 @@ void parse_cmd(char* input) {
         
     }
     else {
-        /*
-        if (strlen(cur_input) > 0) {
-            if(execlp(args[0], cur_input, NULL) < 0) {
-                fprintf(stderr, "That is an invalid command\n");
-                exit(0);
-            }
-        } else {
-            if(execlp(args[0], NULL) < 0) {
-                fprintf(stderr, "That is an invalid command\n");
-                exit(0);
-            }
-        }*/
+        execute(args);
     }
     
 }
