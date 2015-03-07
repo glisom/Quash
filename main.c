@@ -22,7 +22,7 @@ struct Job {
 };
 
 static int job_count = 0;
-static struct Job jobs[20];
+static struct Job jobs[100];
 
 char* rm_whitespace(char* str) {
     char *end;
@@ -120,7 +120,7 @@ void parse_cmd(char* input) {
     char* filedir_out = strchr(cur_input, '>');
     int change_dir = strcmp("cd", args[0]);
     int set = strcmp(args[0], "set");
-    int jobs = strcmp(args[0], "jobs");
+    int jobs_com = strcmp(args[0], "jobs");
     
     if (change_dir == 0) {
         cd(args[1]);
@@ -128,7 +128,7 @@ void parse_cmd(char* input) {
     else if (set == 0) {
         setPath(args[1]);
     }
-    else if (jobs == 0) {
+    else if (jobs_com == 0) {
         displayJobs();
     }
     else if (is_backgrd != NULL) {
@@ -149,14 +149,9 @@ void parse_cmd(char* input) {
             exit(0);
         }
         else {
-            printf("%d", job_count);
-            struct Job new_job = {.pid = 0, .id = 0, .cmd = ""};
-            printf("%d", new_job.pid);
-//            jobs[job_count].pid = pid;
-//            jobs[job_count].id = job_count;
-//            jobs[job_count].cmd = command;
-//            jobs[0] = new_job;
-            job_count = job_count + 1;
+            struct Job new_job = {.pid = pid, .id = job_count, .cmd = bg_command};
+            jobs[job_count] = new_job;
+            job_count++;
             while(waitid(pid, NULL, WEXITED | WNOHANG) > 0) {}
         }
     }
@@ -222,11 +217,6 @@ int main(int argc, char** argv, char** envp) {
     int flag = true;
     char* input, prompt[128];
     job_count = 0;
-    int i;
-    for(i = 0; i < 20; i++) {
-//        jobs[i] = ;
-        printf("%d", jobs[i].pid);
-    }
     do {
         snprintf(prompt, sizeof(prompt), "[%s:%s]$ ", getenv("USER"), getcwd(NULL, 1024));
         input = readline(prompt);
