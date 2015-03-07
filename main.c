@@ -23,6 +23,8 @@ struct Job {
 
 static int job_count = 0;
 static struct Job jobs[100];
+static char* env;
+static char* dir; 
 
 char* rm_whitespace(char* str) {
     char *end;
@@ -39,10 +41,12 @@ char* rm_whitespace(char* str) {
 void cd(char *p) {
     if (p == NULL) {
         chdir(getenv("HOME"));
+        dir = getcwd(NULL, 1024);
     } else {
         if (chdir(p) == -1) {
             printf(" %s: No such file or directory\n", strerror(errno));
         }
+        dir = getcwd(NULL, 1024);
     }
 }
 
@@ -122,6 +126,7 @@ void parse_cmd(char* input) {
     int change_dir = strcmp("cd", args[0]);
     int set = strcmp(args[0], "set");
     int jobs_com = strcmp(args[0], "jobs");
+    int kill = strcmp(args[0], "kill");
     
     if (change_dir == 0) {
         cd(args[1]);
@@ -153,7 +158,6 @@ void parse_cmd(char* input) {
             struct Job new_job = {.pid = pid, .id = job_count, .cmd = bg_command};
             jobs[job_count] = new_job;
             job_count++;
-            while(waitid(pid, NULL, WEXITED | WNOHANG) > 0) {}
         }
     }
     else if (is_pipe != NULL) {
@@ -231,12 +235,17 @@ void parse_cmd(char* input) {
         if (pid == 0) {
             parse_cmd(rm_whitespace(n_input));
             close(fout);
+            n_input[strlen(n_input) - 1] = '\0';
         } else {
             waitpid(pid, &status, 0);
             if(status == 1) {
                 fprintf(stderr, "%s\n", "Darn ,the pokemon fled...\n");
             }
         }
+    }
+    else if (kill != NULL) {
+        printf("%s %s", command[1], command[2]);
+       // kill(command[1], command[2]);
     }
     else {
         execute(args);
@@ -263,11 +272,12 @@ int main(int argc, char** argv, char** envp) {
     printf("┃████████████████████████████████████████████████████████████████┃\n");
     printf("┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛\n");
     rl_bind_key('\t', rl_complete);
-    int flag = true;
     char* input, prompt[128];
+    env = getenv("USER");
+    dir = getcwd(NULL, 1024);
     job_count = 0;
-    do {
-        snprintf(prompt, sizeof(prompt), "[%s:%s]$ ", getenv("USER"), getcwd(NULL, 1024));
+    while (true) {
+        snprintf(prompt, sizeof(prompt), "[%s:%s]$ ", env, dir);
         input = readline(prompt);
         input = rm_whitespace(input);
         if (strcmp("exit", input) != 0 && strcmp("quit", input) != 0) {
@@ -276,10 +286,10 @@ int main(int argc, char** argv, char** envp) {
                 parse_cmd(input);
             }
         } else {
-            flag = false;
+            break;
         }
         free(input);
-    } while (flag);
+    }
 
     return 0;
 }

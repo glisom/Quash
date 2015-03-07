@@ -1,0 +1,14 @@
+a.txt
+EECS678Project1.pdf
+main2.c
+main.c
+main.c.bak
+main.o
+Makefile
+Quash
+README.md
+[aeskilso:/home/aeskilso/EECS_678/Quash]$ 
+[aeskilso:/home/aeskilso/EECS_678/Quash]$ 
+[aeskilso:/home/aeskilso/EECS_678/Quash]$ 
+[aeskilso:/home/aeskilso/EECS_678/Quash]$ quit
+[aeskilso:/home/aeskilso/EECS_678/Quash]$ quit
